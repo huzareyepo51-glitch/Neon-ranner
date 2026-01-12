@@ -1,6 +1,7 @@
 {
   "name": "Neon Runner 3D",
   "short_name": "NeonRunner",
+  "description": "Бесконечный киберпанк-раннер",
   "start_url": "index.html",
   "display": "standalone",
   "background_color": "#000000",
@@ -8,14 +9,16 @@
   "orientation": "portrait",
   "icons": [
     {
-      "src": "[https://via.placeholder.com/192x192/ff0055/ffffff?text=NR](https://via.placeholder.com/192x192/ff0055/ffffff?text=NR)",
+      "src": "https://via.placeholder.com/192x192/ff0055/ffffff?text=NR",
       "type": "image/png",
-      "sizes": "192x192"
+      "sizes": "192x192",
+      "purpose": "any maskable"
     },
     {
-      "src": "[https://via.placeholder.com/512x512/ff0055/ffffff?text=NeonRunner](https://via.placeholder.com/512x512/ff0055/ffffff?text=NeonRunner)",
+      "src": "https://via.placeholder.com/512x512/ff0055/ffffff?text=NeonRunner",
       "type": "image/png",
-      "sizes": "512x512"
+      "sizes": "512x512",
+      "purpose": "any maskable"
     }
   ]
 }
