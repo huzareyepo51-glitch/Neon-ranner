@@ -4,170 +4,98 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
-    <!-- PWA Meta Tags -->
+    <!-- PWA Settings -->
     <meta name="theme-color" content="#ff0055">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="NeonRunner">
-    
     <link rel="manifest" href="manifest.json">
     
-    <title>NEON RUNNER // DOWNLOAD</title>
+    <title>NEON RUNNER</title>
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@700;900&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --neon-blue: #00f0ff;
-            --neon-pink: #ff0055;
-        }
-
-        body { 
-            margin: 0; 
-            overflow: hidden; 
-            background: #000; 
-            font-family: 'Rajdhani', sans-serif; 
-            touch-action: none; 
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
-        }
+        :root { --neon-blue: #00f0ff; --neon-pink: #ff0055; }
+        body { margin: 0; overflow: hidden; background: #050505; font-family: 'Rajdhani', sans-serif; touch-action: none; user-select: none; -webkit-tap-highlight-color: transparent; }
         
-        /* Игровой интерфейс (Скрыт до старта) */
-        #game-ui { display: none; }
-
-        #ui {
-            position: absolute;
-            top: env(safe-area-inset-top, 20px);
-            left: 20px;
-            color: var(--neon-blue);
-            text-shadow: 0 0 10px var(--neon-blue);
-            pointer-events: none;
-            z-index: 10;
+        /* ЗАСТАВКА (LANDING) */
+        #landing-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at center, #1a0000 0%, #000 80%);
+            z-index: 9999;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            background-image: linear-gradient(rgba(0, 240, 255, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 240, 255, 0.05) 1px, transparent 1px);
+            background-size: 50px 50px;
         }
 
+        .logo {
+            font-size: 3.5rem; line-height: 0.9; margin-bottom: 50px; color: #fff;
+            text-transform: uppercase; text-shadow: 0 0 20px var(--neon-pink);
+            font-weight: 900; letter-spacing: 2px; text-align: center;
+            animation: float 4s ease-in-out infinite;
+        }
+        .logo span { color: var(--neon-blue); font-size: 0.5em; letter-spacing: 8px; display: block; margin-top: 5px; }
+
+        /* Кнопки */
+        .btn {
+            padding: 18px 40px; border-radius: 12px; font-weight: 900; font-size: 1.2rem;
+            text-transform: uppercase; border: none; cursor: pointer; margin: 10px;
+            width: 85%; max-width: 320px; transition: all 0.2s; position: relative;
+        }
+
+        /* Кнопка УСТАНОВИТЬ (Самая яркая) */
+        #btn-install {
+            background: var(--neon-blue); color: #000;
+            box-shadow: 0 0 30px rgba(0, 240, 255, 0.3);
+            display: none; /* Скрыта по умолчанию */
+            animation: pulse-glow 2s infinite;
+        }
+        #btn-install:active { transform: scale(0.95); }
+
+        /* Кнопка ИГРАТЬ (Обычная) */
+        #btn-play {
+            background: transparent; border: 2px solid #333; color: #888;
+            opacity: 0; animation: fadeIn 1s forwards 0.5s; /* Появляется плавно */
+        }
+        #btn-play:hover { border-color: #fff; color: #fff; }
+
+        /* Игровой интерфейс */
+        #game-ui { display: none; }
+        #ui { position: absolute; top: env(safe-area-inset-top, 20px); left: 20px; color: var(--neon-blue); text-shadow: 0 0 10px var(--neon-blue); pointer-events: none; z-index: 10; }
         #score-board { font-size: 2rem; font-weight: 800; }
         #stats { font-size: 1rem; opacity: 0.8; color: #fff; margin-top: 5px; }
-
-        /* --- ЭКРАН УСТАНОВКИ (JUICY LANDING) --- */
-        #install-screen {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: #050505;
-            z-index: 9999;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            /* Красивый фон с сеткой */
-            background-image: 
-                linear-gradient(rgba(0, 240, 255, 0.1) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0, 240, 255, 0.1) 1px, transparent 1px);
-            background-size: 40px 40px;
-        }
-
-        /* Заголовок игры */
-        .game-title {
-            font-size: 3.5rem;
-            line-height: 1;
-            margin-bottom: 40px;
-            color: #fff;
-            text-transform: uppercase;
-            text-shadow: 4px 4px 0px var(--neon-pink);
-            font-weight: 900;
-            letter-spacing: 5px;
-            animation: float 3s ease-in-out infinite;
-        }
-
-        .game-title span { color: var(--neon-blue); }
-
-        /* Сочная кнопка */
-        .juicy-install-btn {
-            background: linear-gradient(135deg, var(--neon-pink), #ff5e00);
-            color: #fff;
-            border: none;
-            padding: 20px 60px;
-            border-radius: 50px;
-            font-weight: 900;
-            text-transform: uppercase;
-            font-size: 1.5rem;
-            cursor: pointer;
-            box-shadow: 0 10px 30px rgba(255, 0, 85, 0.5);
-            transition: all 0.2s;
-            position: relative;
-            overflow: hidden;
-            animation: pulse-btn 2s infinite;
-        }
-
-        .juicy-install-btn:active {
-            transform: scale(0.95);
-            box-shadow: 0 5px 15px rgba(255, 0, 85, 0.8);
-        }
-
-        /* Статус (если кнопка еще не готова) */
-        .status-text {
-            color: #555;
-            margin-top: 20px;
-            font-size: 0.9rem;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-        }
-
-        #boss-warning {
-            position: absolute;
-            top: 15%; width: 100%; text-align: center; font-size: 2rem;
-            color: #ff0000; text-shadow: 0 0 20px #ff0000; display: none; z-index: 15;
-            background: rgba(0,0,0,0.7); padding: 15px 0; animation: blink 0.5s infinite;
-        }
-
-        #game-over {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            text-align: center; display: none; z-index: 20;
-            background: rgba(10, 0, 20, 0.95); padding: 40px; border: 2px solid var(--neon-pink);
-            color: #fff; width: 85%; max-width: 400px;
-            box-shadow: 0 0 50px var(--neon-pink);
-            clip-path: polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%);
-        }
-
-        button.restart-btn {
-            background: var(--neon-pink); border: none; color: #fff; padding: 15px 40px;
-            cursor: pointer; font-family: inherit; font-size: 1.5rem; text-transform: uppercase;
-            font-weight: 900; margin-top: 20px; width: 100%;
-        }
-
+        #boss-warning { position: absolute; top: 15%; width: 100%; text-align: center; font-size: 2rem; color: #ff0000; text-shadow: 0 0 20px #ff0000; display: none; z-index: 15; background: rgba(0,0,0,0.7); padding: 15px 0; animation: blink 0.5s infinite; }
+        #game-over { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; display: none; z-index: 20; background: rgba(10, 0, 20, 0.95); padding: 40px; border: 2px solid var(--neon-pink); color: #fff; width: 85%; max-width: 400px; box-shadow: 0 0 50px var(--neon-pink); clip-path: polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%); }
+        .restart-btn { background: var(--neon-pink); border: none; color: #fff; padding: 15px; width: 100%; font-weight: 900; font-size: 1.2rem; margin-top: 20px; text-transform: uppercase; }
+        
         canvas { display: block; }
 
         @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-        @keyframes pulse-btn { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 0, 85, 0.7); } 70% { transform: scale(1.05); box-shadow: 0 0 0 20px rgba(255, 0, 85, 0); } 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 0, 85, 0); } }
-        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.2; } 100% { opacity: 1; } }
+        @keyframes pulse-glow { 0% { box-shadow: 0 0 20px rgba(0, 240, 255, 0.2); } 50% { box-shadow: 0 0 40px rgba(0, 240, 255, 0.6); } 100% { box-shadow: 0 0 20px rgba(0, 240, 255, 0.2); } }
+        @keyframes fadeIn { to { opacity: 1; } }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
 
-    <!-- ЭКРАН УСТАНОВКИ (Лендинг) -->
-    <div id="install-screen">
-        <h1 class="game-title">NEON RUNNER <span style="display:block; font-size: 0.5em; letter-spacing: 10px;">ULTIMATE</span></h1>
+    <!-- ЗАСТАВКА -->
+    <div id="landing-screen">
+        <div class="logo">NEON<br>RUNNER<span>ULTIMATE</span></div>
         
-        <button class="juicy-install-btn" id="installButton" style="display: none;">
-            СКАЧАТЬ ИГРУ
-        </button>
+        <!-- Эта кнопка появится, если Android разрешит установку -->
+        <button id="btn-install" class="btn">📲 УСТАНОВИТЬ APP</button>
         
-        <p id="install-status" class="status-text">Инициализация...</p>
-
-        <p id="ios-hint" style="display:none; margin-top: 20px; color: #888; font-size: 0.8rem;">
-            На iPhone: <br> Нажми "Поделиться" -> "На экран Домой"
-        </p>
+        <!-- Эта кнопка появится всегда -->
+        <button id="btn-play" class="btn" onclick="startGame()">▶ ИГРАТЬ В БРАУЗЕРЕ</button>
     </div>
 
-    <!-- ИГРОВОЙ ИНТЕРФЕЙС -->
+    <!-- ИГРА -->
     <div id="game-ui">
         <div id="ui">
             <div id="score-board">SCORE: 0000</div>
             <div id="stats">SPD: <span id="val-speed">0.0</span> | CREDITS: <span id="val-chips">0</span></div>
         </div>
-
         <div id="boss-warning">⚠ ADAM SMASHER DETECTED ⚠</div>
-
         <div id="game-over">
             <h1 style="color: var(--neon-pink); margin: 0; font-size: 2.5rem;">FLATLINED</h1>
             <p style="font-size: 1.2rem; margin: 15px 0;">ФИНАЛЬНЫЙ СЧЕТ: <span id="final-score">0</span></p>
@@ -176,74 +104,63 @@
     </div>
 
     <script>
-        function isRunningStandalone() {
-            return (window.matchMedia('(display-mode: standalone)').matches) || 
-                   (window.navigator.standalone) || 
-                   document.referrer.includes('android-app://');
-        }
-
-        // --- PWA INSTALL LOGIC ---
+        // --- ЛОГИКА ИНТЕРФЕЙСА ---
         let deferredPrompt;
-        const installButton = document.getElementById('installButton');
-        const installScreen = document.getElementById('install-screen');
+        const installBtn = document.getElementById('btn-install');
+        const playBtn = document.getElementById('btn-play');
+        const landing = document.getElementById('landing-screen');
         const gameUI = document.getElementById('game-ui');
-        const statusText = document.getElementById('install-status');
-        const iosHint = document.getElementById('ios-hint');
 
-        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        // Проверяем, запущено ли уже как приложение
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
 
-        // Если запущено как приложение -> Сразу играем
-        if (isRunningStandalone()) {
-            installScreen.style.display = 'none';
-            gameUI.style.display = 'block';
-        } else {
-            // Если в браузере -> Показываем лендинг
-            installScreen.style.display = 'flex';
-            if (isIOS) {
-                iosHint.style.display = 'block';
-                statusText.style.display = 'none';
-            }
+        if (isStandalone) {
+            startGame(); // Сразу запускаем игру без заставки
         }
 
+        // Ловим событие "Можно установить"
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
-            installButton.style.display = 'block'; // Показываем кнопку
-            statusText.style.display = 'none'; // Скрываем текст загрузки
+            installBtn.style.display = 'block'; // Показываем кнопку установки
+            playBtn.style.borderColor = '#333'; // Делаем кнопку игры менее заметной
         });
 
-        installButton.addEventListener('click', async () => {
-            if (!deferredPrompt) return;
-            deferredPrompt.prompt();
-            const { outcome } = await deferredPrompt.userChoice;
-            console.log(`Install choice: ${outcome}`);
-            deferredPrompt = null;
+        installBtn.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                deferredPrompt = null;
+                if (outcome === 'accepted') {
+                    installBtn.style.display = 'none';
+                }
+            }
         });
 
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js');
-            });
+        function startGame() {
+            landing.style.display = 'none';
+            gameUI.style.display = 'block';
+            initThreeJS(); // Запуск 3D
         }
 
-        // --- ДАЛЕЕ КОД ИГРЫ (Без изменений) ---
+        // --- SERVICE WORKER ---
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js').catch(() => {});
+        }
+
+        // --- ИГРОВОЙ ДВИЖОК (THREE.JS) ---
         let scene, camera, renderer, player, clock;
         let obstacles = [], coins = [], lasers = [], sparks = [];
-        let score = 0, chipsCount = 0, speed = 0.5, gameActive = false;
-        
+        let score = 0, chipsCount = 0, speed = 0.5, gameActive = true;
         let velocityY = 0;
         const gravity = -0.015, jumpStrength = 0.35, laneWidth = 4;
-
         let boss, bossActive = false, bossTimer = 0;
-        let touchStartX = 0, touchStartY = 0;
+        let touchStartX = 0;
 
         const playerBox = new THREE.Box3();
         const entityBox = new THREE.Box3();
 
-        function init() {
-            if (!isRunningStandalone()) return; // Экономим батарею в браузере
-
-            gameActive = true;
+        function initThreeJS() {
             scene = new THREE.Scene();
             scene.fog = new THREE.FogExp2(0x000000, 0.02);
 
@@ -258,6 +175,7 @@
 
             clock = new THREE.Clock();
 
+            // Свет
             scene.add(new THREE.AmbientLight(0x404040));
             const pLight = new THREE.PointLight(0x00f0ff, 2, 50);
             pLight.position.set(0, 10, 5);
@@ -267,71 +185,45 @@
             createEnvironment();
             createBoss();
 
-            window.addEventListener('touchstart', e => {
-                touchStartX = e.touches[0].clientX;
-                touchStartY = e.touches[0].clientY;
-            }, { passive: false });
-
+            // Управление
+            window.addEventListener('touchstart', e => touchStartX = e.touches[0].clientX, {passive: false});
             window.addEventListener('touchend', e => {
                 const diffX = e.changedTouches[0].clientX - touchStartX;
-                const diffY = e.changedTouches[0].clientY - touchStartY;
-
-                if (Math.abs(diffX) < 25 && Math.abs(diffY) < 25) {
+                if (Math.abs(diffX) < 25) {
                     if (player.position.y <= 0.31) velocityY = jumpStrength;
-                } else if (Math.abs(diffX) > Math.abs(diffY)) {
-                    if (diffX > 40 && player.position.x < laneWidth) {
-                        player.position.x += laneWidth;
-                        createSparks();
-                    }
-                    if (diffX < -40 && player.position.x > -laneWidth) {
-                        player.position.x -= laneWidth;
-                        createSparks();
-                    }
+                } else {
+                    if (diffX > 30 && player.position.x < laneWidth) { player.position.x += laneWidth; createSparks(); }
+                    if (diffX < -30 && player.position.x > -laneWidth) { player.position.x -= laneWidth; createSparks(); }
                 }
-            }, { passive: false });
+            }, {passive: false});
 
             window.addEventListener('resize', onResize);
             animate();
         }
 
+        // ... [КОД СОЗДАНИЯ ОБЪЕКТОВ - ТАКОЙ ЖЕ КАК В ПРОШЛОЙ ВЕРСИИ] ...
         function createPlayer() {
             player = new THREE.Group();
             const mat = new THREE.MeshPhongMaterial({ color: 0x111111, emissive: 0x00f0ff, emissiveIntensity: 0.3 });
-            const body = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.6, 3), mat);
-            body.position.y = 0.3;
-            player.add(body);
-            const cabin = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.5, 1.2), new THREE.MeshPhongMaterial({ color: 0x000000 }));
-            cabin.position.set(0, 0.7, -0.2);
-            player.add(cabin);
+            const body = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.6, 3), mat); body.position.y = 0.3; player.add(body);
+            const cabin = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.5, 1.2), new THREE.MeshPhongMaterial({ color: 0x000000 })); cabin.position.set(0, 0.7, -0.2); player.add(cabin);
             scene.add(player);
         }
 
         function createEnvironment() {
-            const grid = new THREE.GridHelper(400, 80, 0xff0055, 0x220011);
-            grid.position.z = -50;
-            scene.add(grid);
+            const grid = new THREE.GridHelper(400, 80, 0xff0055, 0x220011); grid.position.z = -50; scene.add(grid);
         }
 
         function createBoss() {
             boss = new THREE.Group();
             const mat = new THREE.MeshPhongMaterial({ color: 0x1a1a1a, emissive: 0x330000 });
-            const hull = new THREE.Mesh(new THREE.BoxGeometry(4, 1.5, 7), mat);
-            boss.add(hull);
+            const hull = new THREE.Mesh(new THREE.BoxGeometry(4, 1.5, 7), mat); boss.add(hull);
             const smasher = new THREE.Group();
-            const torso = new THREE.Mesh(new THREE.BoxGeometry(1.2, 2, 0.8), mat);
-            torso.position.y = 1.7;
-            smasher.add(torso);
-            const head = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.5), mat);
-            head.position.y = 2.8;
-            const eye = new THREE.Mesh(new THREE.SphereGeometry(0.1), new THREE.MeshBasicMaterial({ color: 0xff0000 }));
-            eye.position.set(0, 0, 0.3);
-            head.add(eye);
-            smasher.add(head);
-            smasher.position.y = 0.5;
-            boss.add(smasher);
-            boss.position.set(0, 6, -180);
-            boss.rotation.y = Math.PI; 
-            scene.add(boss);
+            const torso = new THREE.Mesh(new THREE.BoxGeometry(1.2, 2, 0.8), mat); torso.position.y = 1.7; smasher.add(torso);
+            const head = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.5), mat); head.position.y = 2.8; smasher.add(head);
+            const eye = new THREE.Mesh(new THREE.SphereGeometry(0.1), new THREE.MeshBasicMaterial({ color: 0xff0000 })); eye.position.set(0, 0, 0.3); head.add(eye);
+            smasher.position.y = 0.5; boss.add(smasher);
+            boss.position.set(0, 6, -180); boss.rotation.y = Math.PI; scene.add(boss);
         }
 
         function spawnEntity() {
@@ -339,23 +231,17 @@
             if (Math.random() < 0.65) {
                 const h = Math.random() * 2 + 1;
                 const obs = new THREE.Mesh(new THREE.BoxGeometry(3, h, 1), new THREE.MeshPhongMaterial({ color: 0xff0055 }));
-                obs.position.set(lane, h/2, -100);
-                scene.add(obs);
-                obstacles.push(obs);
+                obs.position.set(lane, h/2, -100); scene.add(obs); obstacles.push(obs);
             } else {
                 const coin = new THREE.Mesh(new THREE.SphereGeometry(0.5, 12, 12), new THREE.MeshBasicMaterial({ color: 0xfcee0a }));
-                coin.position.set(lane, 1.0, -100);
-                scene.add(coin);
-                coins.push(coin);
+                coin.position.set(lane, 1.0, -100); scene.add(coin); coins.push(coin);
             }
         }
 
         function spawnLaser() {
             const laser = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 8), new THREE.MeshBasicMaterial({ color: 0xff0000 }));
-            laser.rotation.x = Math.PI / 2;
-            laser.position.set(player.position.x, 0.4, boss.position.z + 5);
-            scene.add(laser);
-            lasers.push(laser);
+            laser.rotation.x = Math.PI / 2; laser.position.set(player.position.x, 0.4, boss.position.z + 5);
+            scene.add(laser); lasers.push(laser);
         }
 
         function createSparks() {
@@ -363,8 +249,7 @@
                 const spark = new THREE.Mesh(new THREE.BoxGeometry(0.1,0.1,0.1), new THREE.MeshBasicMaterial({ color: 0x00f0ff }));
                 spark.position.set(player.position.x, 0.1, 1);
                 spark.userData = { vx: (Math.random()-0.5)*0.2, vy: Math.random()*0.2, life: 1.0 };
-                scene.add(spark);
-                sparks.push(spark);
+                scene.add(spark); sparks.push(spark);
             }
         }
 
@@ -375,12 +260,10 @@
             speed += 0.0001;
 
             player.position.y += velocityY;
-            if (player.position.y > 0.3) velocityY += gravity;
-            else { player.position.y = 0.3; velocityY = 0; }
+            if (player.position.y > 0.3) velocityY += gravity; else { player.position.y = 0.3; velocityY = 0; }
 
             for(let i = sparks.length - 1; i >= 0; i--) {
-                const s = sparks[i];
-                s.position.x += s.userData.vx; s.position.y += s.userData.vy;
+                const s = sparks[i]; s.position.x += s.userData.vx; s.position.y += s.userData.vy;
                 s.userData.life -= 0.04; s.scale.setScalar(s.userData.life);
                 if(s.userData.life <= 0) { scene.remove(s); sparks.splice(i, 1); }
             }
@@ -399,16 +282,14 @@
 
             lasers.forEach((l, i) => {
                 l.position.z += (speed * 60 + 25) * delta;
-                playerBox.setFromObject(player);
-                entityBox.setFromObject(l);
+                playerBox.setFromObject(player); entityBox.setFromObject(l);
                 if (playerBox.intersectsBox(entityBox)) gameOver();
                 if (l.position.z > 20) { scene.remove(l); lasers.splice(i, 1); }
             });
 
             obstacles.forEach((obs, i) => {
                 obs.position.z += speed * 95 * delta;
-                playerBox.setFromObject(player);
-                entityBox.setFromObject(obs);
+                playerBox.setFromObject(player); entityBox.setFromObject(obs);
                 if (playerBox.intersectsBox(entityBox)) gameOver();
                 if (obs.position.z > 15) { scene.remove(obs); obstacles.splice(i, 1); score += 10; updateUI(); }
             });
@@ -425,26 +306,9 @@
             renderer.render(scene, camera);
         }
 
-        function updateUI() {
-            document.getElementById('score-board').textContent = `SCORE: ${score.toString().padStart(4, '0')}`;
-            document.getElementById('val-speed').textContent = (speed * 10).toFixed(1);
-            document.getElementById('val-chips').textContent = chipsCount;
-        }
-
-        function gameOver() {
-            gameActive = false;
-            document.getElementById('game-over').style.display = 'block';
-            document.getElementById('final-score').textContent = score;
-            if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
-        }
-
-        function onResize() {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        }
-
-        window.onload = init;
+        function updateUI() { document.getElementById('score-board').textContent = `SCORE: ${score.toString().padStart(4, '0')}`; document.getElementById('val-speed').textContent = (speed * 10).toFixed(1); document.getElementById('val-chips').textContent = chipsCount; }
+        function gameOver() { gameActive = false; document.getElementById('game-over').style.display = 'block'; document.getElementById('final-score').textContent = score; if (navigator.vibrate) navigator.vibrate([100, 50, 100]); }
+        function onResize() { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); }
     </script>
 </body>
 </html>
