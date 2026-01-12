@@ -13,8 +13,8 @@
     
     <link rel="manifest" href="manifest.json">
     
-    <title>NEON RUNNER // ULTIMATE</title>
-    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@700&display=swap" rel="stylesheet">
+    <title>NEON RUNNER // DOWNLOAD</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@700;900&display=swap" rel="stylesheet">
     <style>
         :root {
             --neon-blue: #00f0ff;
@@ -31,6 +31,9 @@
             -webkit-tap-highlight-color: transparent;
         }
         
+        /* Игровой интерфейс (Скрыт до старта) */
+        #game-ui { display: none; }
+
         #ui {
             position: absolute;
             top: env(safe-area-inset-top, 20px);
@@ -44,154 +47,189 @@
         #score-board { font-size: 2rem; font-weight: 800; }
         #stats { font-size: 1rem; opacity: 0.8; color: #fff; margin-top: 5px; }
 
-        /* Баннер установки PWA */
-        #pwa-install-banner {
-            position: absolute;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 240, 255, 0.1);
-            border: 1px solid var(--neon-blue);
-            padding: 15px 25px;
-            border-radius: 15px;
-            color: #fff;
-            backdrop-filter: blur(10px);
-            z-index: 100;
-            display: none; /* Скрыт, пока браузер не даст сигнал */
+        /* --- ЭКРАН УСТАНОВКИ (JUICY LANDING) --- */
+        #install-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #050505;
+            z-index: 9999;
+            display: flex;
             flex-direction: column;
             align-items: center;
-            box-shadow: 0 0 20px rgba(0, 240, 255, 0.2);
-            animation: slideUp 0.5s ease-out;
+            justify-content: center;
+            text-align: center;
+            /* Красивый фон с сеткой */
+            background-image: 
+                linear-gradient(rgba(0, 240, 255, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 240, 255, 0.1) 1px, transparent 1px);
+            background-size: 40px 40px;
         }
 
-        @keyframes slideUp { from { bottom: -100px; } to { bottom: 30px; } }
+        /* Заголовок игры */
+        .game-title {
+            font-size: 3.5rem;
+            line-height: 1;
+            margin-bottom: 40px;
+            color: #fff;
+            text-transform: uppercase;
+            text-shadow: 4px 4px 0px var(--neon-pink);
+            font-weight: 900;
+            letter-spacing: 5px;
+            animation: float 3s ease-in-out infinite;
+        }
 
-        .install-btn {
-            background: var(--neon-blue);
-            color: #000;
+        .game-title span { color: var(--neon-blue); }
+
+        /* Сочная кнопка */
+        .juicy-install-btn {
+            background: linear-gradient(135deg, var(--neon-pink), #ff5e00);
+            color: #fff;
             border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
+            padding: 20px 60px;
+            border-radius: 50px;
             font-weight: 900;
             text-transform: uppercase;
-            margin-top: 10px;
+            font-size: 1.5rem;
             cursor: pointer;
+            box-shadow: 0 10px 30px rgba(255, 0, 85, 0.5);
+            transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
+            animation: pulse-btn 2s infinite;
+        }
+
+        .juicy-install-btn:active {
+            transform: scale(0.95);
+            box-shadow: 0 5px 15px rgba(255, 0, 85, 0.8);
+        }
+
+        /* Статус (если кнопка еще не готова) */
+        .status-text {
+            color: #555;
+            margin-top: 20px;
+            font-size: 0.9rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
         }
 
         #boss-warning {
             position: absolute;
-            top: 15%;
-            width: 100%;
-            text-align: center;
-            font-size: 2rem;
-            color: #ff0000;
-            text-shadow: 0 0 20px #ff0000;
-            display: none;
-            z-index: 15;
-            background: rgba(0,0,0,0.7);
-            padding: 15px 0;
-            animation: blink 0.5s infinite;
+            top: 15%; width: 100%; text-align: center; font-size: 2rem;
+            color: #ff0000; text-shadow: 0 0 20px #ff0000; display: none; z-index: 15;
+            background: rgba(0,0,0,0.7); padding: 15px 0; animation: blink 0.5s infinite;
         }
 
         #game-over {
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-            display: none;
-            z-index: 20;
-            background: rgba(10, 0, 20, 0.95);
-            padding: 40px;
-            border: 2px solid var(--neon-pink);
-            color: #fff;
-            width: 85%;
-            max-width: 400px;
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            text-align: center; display: none; z-index: 20;
+            background: rgba(10, 0, 20, 0.95); padding: 40px; border: 2px solid var(--neon-pink);
+            color: #fff; width: 85%; max-width: 400px;
             box-shadow: 0 0 50px var(--neon-pink);
             clip-path: polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%);
         }
 
-        .action-btn {
-            background: var(--neon-pink);
-            border: none;
-            color: #fff;
-            padding: 15px 40px;
-            cursor: pointer;
-            font-family: inherit;
-            font-size: 1.5rem;
-            text-transform: uppercase;
-            font-weight: 900;
-            margin-top: 20px;
-            width: 100%;
+        button.restart-btn {
+            background: var(--neon-pink); border: none; color: #fff; padding: 15px 40px;
+            cursor: pointer; font-family: inherit; font-size: 1.5rem; text-transform: uppercase;
+            font-weight: 900; margin-top: 20px; width: 100%;
         }
 
         canvas { display: block; }
 
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        @keyframes pulse-btn { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 0, 85, 0.7); } 70% { transform: scale(1.05); box-shadow: 0 0 0 20px rgba(255, 0, 85, 0); } 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 0, 85, 0); } }
         @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.2; } 100% { opacity: 1; } }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
 
-    <div id="ui">
-        <div id="score-board">SCORE: 0000</div>
-        <div id="stats">SPD: <span id="val-speed">0.0</span> | CREDITS: <span id="val-chips">0</span></div>
+    <!-- ЭКРАН УСТАНОВКИ (Лендинг) -->
+    <div id="install-screen">
+        <h1 class="game-title">NEON RUNNER <span style="display:block; font-size: 0.5em; letter-spacing: 10px;">ULTIMATE</span></h1>
+        
+        <button class="juicy-install-btn" id="installButton" style="display: none;">
+            СКАЧАТЬ ИГРУ
+        </button>
+        
+        <p id="install-status" class="status-text">Инициализация...</p>
+
+        <p id="ios-hint" style="display:none; margin-top: 20px; color: #888; font-size: 0.8rem;">
+            На iPhone: <br> Нажми "Поделиться" -> "На экран Домой"
+        </p>
     </div>
 
-    <!-- Баннер установки -->
-    <div id="pwa-install-banner">
-        <div style="font-size: 0.9rem; letter-spacing: 1px;">УСТАНОВИТЬ NEON RUNNER?</div>
-        <button class="install-btn" id="installButton">СКАЧАТЬ</button>
-    </div>
+    <!-- ИГРОВОЙ ИНТЕРФЕЙС -->
+    <div id="game-ui">
+        <div id="ui">
+            <div id="score-board">SCORE: 0000</div>
+            <div id="stats">SPD: <span id="val-speed">0.0</span> | CREDITS: <span id="val-chips">0</span></div>
+        </div>
 
-    <div id="boss-warning">⚠ ADAM SMASHER DETECTED ⚠</div>
+        <div id="boss-warning">⚠ ADAM SMASHER DETECTED ⚠</div>
 
-    <div id="game-over">
-        <h1 style="color: var(--neon-pink); margin: 0; font-size: 2.5rem;">FLATLINED</h1>
-        <p style="font-size: 1.2rem; margin: 15px 0;">ФИНАЛЬНЫЙ СЧЕТ: <span id="final-score">0</span></p>
-        <button class="action-btn" onclick="location.reload()">REBOOT SYSTEM</button>
+        <div id="game-over">
+            <h1 style="color: var(--neon-pink); margin: 0; font-size: 2.5rem;">FLATLINED</h1>
+            <p style="font-size: 1.2rem; margin: 15px 0;">ФИНАЛЬНЫЙ СЧЕТ: <span id="final-score">0</span></p>
+            <button class="restart-btn" onclick="location.reload()">REBOOT SYSTEM</button>
+        </div>
     </div>
 
     <script>
-        // --- PWA ЛОГИКА УСТАНОВКИ ---
-        let deferredPrompt;
-        const installBanner = document.getElementById('pwa-install-banner');
-        const installButton = document.getElementById('installButton');
-
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js')
-                    .then(reg => console.log('PWA: SW Active'))
-                    .catch(err => console.log('PWA: SW Error', err));
-            });
+        function isRunningStandalone() {
+            return (window.matchMedia('(display-mode: standalone)').matches) || 
+                   (window.navigator.standalone) || 
+                   document.referrer.includes('android-app://');
         }
 
-        // Слушаем сигнал от браузера о готовности к установке
+        // --- PWA INSTALL LOGIC ---
+        let deferredPrompt;
+        const installButton = document.getElementById('installButton');
+        const installScreen = document.getElementById('install-screen');
+        const gameUI = document.getElementById('game-ui');
+        const statusText = document.getElementById('install-status');
+        const iosHint = document.getElementById('ios-hint');
+
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
+        // Если запущено как приложение -> Сразу играем
+        if (isRunningStandalone()) {
+            installScreen.style.display = 'none';
+            gameUI.style.display = 'block';
+        } else {
+            // Если в браузере -> Показываем лендинг
+            installScreen.style.display = 'flex';
+            if (isIOS) {
+                iosHint.style.display = 'block';
+                statusText.style.display = 'none';
+            }
+        }
+
         window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault(); // Блокируем стандартное окно
-            deferredPrompt = e; // Сохраняем событие
-            installBanner.style.display = 'flex'; // Показываем нашу кнопку
+            e.preventDefault();
+            deferredPrompt = e;
+            installButton.style.display = 'block'; // Показываем кнопку
+            statusText.style.display = 'none'; // Скрываем текст загрузки
         });
 
         installButton.addEventListener('click', async () => {
             if (!deferredPrompt) return;
-            installBanner.style.display = 'none';
-            deferredPrompt.prompt(); // Показываем системное окно установки
+            deferredPrompt.prompt();
             const { outcome } = await deferredPrompt.userChoice;
-            console.log(`User response to install: ${outcome}`);
+            console.log(`Install choice: ${outcome}`);
             deferredPrompt = null;
         });
 
-        // Прячем баннер, если приложение уже установлено
-        window.addEventListener('appinstalled', () => {
-            installBanner.style.display = 'none';
-            deferredPrompt = null;
-            console.log('PWA: Installed successfully');
-        });
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js');
+            });
+        }
 
-        // --- GAME LOGIC ---
+        // --- ДАЛЕЕ КОД ИГРЫ (Без изменений) ---
         let scene, camera, renderer, player, clock;
         let obstacles = [], coins = [], lasers = [], sparks = [];
-        let score = 0, chipsCount = 0, speed = 0.5, gameActive = true;
+        let score = 0, chipsCount = 0, speed = 0.5, gameActive = false;
         
         let velocityY = 0;
         const gravity = -0.015, jumpStrength = 0.35, laneWidth = 4;
@@ -203,6 +241,9 @@
         const entityBox = new THREE.Box3();
 
         function init() {
+            if (!isRunningStandalone()) return; // Экономим батарею в браузере
+
+            gameActive = true;
             scene = new THREE.Scene();
             scene.fog = new THREE.FogExp2(0x000000, 0.02);
 
@@ -276,7 +317,6 @@
             const mat = new THREE.MeshPhongMaterial({ color: 0x1a1a1a, emissive: 0x330000 });
             const hull = new THREE.Mesh(new THREE.BoxGeometry(4, 1.5, 7), mat);
             boss.add(hull);
-
             const smasher = new THREE.Group();
             const torso = new THREE.Mesh(new THREE.BoxGeometry(1.2, 2, 0.8), mat);
             torso.position.y = 1.7;
@@ -289,7 +329,6 @@
             smasher.add(head);
             smasher.position.y = 0.5;
             boss.add(smasher);
-
             boss.position.set(0, 6, -180);
             boss.rotation.y = Math.PI; 
             scene.add(boss);
