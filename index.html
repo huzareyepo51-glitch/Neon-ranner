@@ -44,6 +44,40 @@
         #score-board { font-size: 2rem; font-weight: 800; }
         #stats { font-size: 1rem; opacity: 0.8; color: #fff; margin-top: 5px; }
 
+        /* Баннер установки PWA */
+        #pwa-install-banner {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 240, 255, 0.1);
+            border: 1px solid var(--neon-blue);
+            padding: 15px 25px;
+            border-radius: 15px;
+            color: #fff;
+            backdrop-filter: blur(10px);
+            z-index: 100;
+            display: none; /* Скрыт, пока браузер не даст сигнал */
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.2);
+            animation: slideUp 0.5s ease-out;
+        }
+
+        @keyframes slideUp { from { bottom: -100px; } to { bottom: 30px; } }
+
+        .install-btn {
+            background: var(--neon-blue);
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-weight: 900;
+            text-transform: uppercase;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+
         #boss-warning {
             position: absolute;
             top: 15%;
@@ -76,7 +110,7 @@
             clip-path: polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%);
         }
 
-        button {
+        .action-btn {
             background: var(--neon-pink);
             border: none;
             color: #fff;
@@ -103,24 +137,58 @@
         <div id="stats">SPD: <span id="val-speed">0.0</span> | CREDITS: <span id="val-chips">0</span></div>
     </div>
 
+    <!-- Баннер установки -->
+    <div id="pwa-install-banner">
+        <div style="font-size: 0.9rem; letter-spacing: 1px;">УСТАНОВИТЬ NEON RUNNER?</div>
+        <button class="install-btn" id="installButton">СКАЧАТЬ</button>
+    </div>
+
     <div id="boss-warning">⚠ ADAM SMASHER DETECTED ⚠</div>
 
     <div id="game-over">
         <h1 style="color: var(--neon-pink); margin: 0; font-size: 2.5rem;">FLATLINED</h1>
         <p style="font-size: 1.2rem; margin: 15px 0;">ФИНАЛЬНЫЙ СЧЕТ: <span id="final-score">0</span></p>
-        <button onclick="location.reload()">REBOOT SYSTEM</button>
+        <button class="action-btn" onclick="location.reload()">REBOOT SYSTEM</button>
     </div>
 
     <script>
-        // Регистрация Service Worker для PWA
+        // --- PWA ЛОГИКА УСТАНОВКИ ---
+        let deferredPrompt;
+        const installBanner = document.getElementById('pwa-install-banner');
+        const installButton = document.getElementById('installButton');
+
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('sw.js')
-                    .then(reg => console.log('PWA Service Worker готов'))
-                    .catch(err => console.log('Ошибка регистрации SW', err));
+                    .then(reg => console.log('PWA: SW Active'))
+                    .catch(err => console.log('PWA: SW Error', err));
             });
         }
 
+        // Слушаем сигнал от браузера о готовности к установке
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault(); // Блокируем стандартное окно
+            deferredPrompt = e; // Сохраняем событие
+            installBanner.style.display = 'flex'; // Показываем нашу кнопку
+        });
+
+        installButton.addEventListener('click', async () => {
+            if (!deferredPrompt) return;
+            installBanner.style.display = 'none';
+            deferredPrompt.prompt(); // Показываем системное окно установки
+            const { outcome } = await deferredPrompt.userChoice;
+            console.log(`User response to install: ${outcome}`);
+            deferredPrompt = null;
+        });
+
+        // Прячем баннер, если приложение уже установлено
+        window.addEventListener('appinstalled', () => {
+            installBanner.style.display = 'none';
+            deferredPrompt = null;
+            console.log('PWA: Installed successfully');
+        });
+
+        // --- GAME LOGIC ---
         let scene, camera, renderer, player, clock;
         let obstacles = [], coins = [], lasers = [], sparks = [];
         let score = 0, chipsCount = 0, speed = 0.5, gameActive = true;
@@ -158,7 +226,6 @@
             createEnvironment();
             createBoss();
 
-            // Мобильное управление (свайпы и тапы)
             window.addEventListener('touchstart', e => {
                 touchStartX = e.touches[0].clientX;
                 touchStartY = e.touches[0].clientY;
@@ -210,7 +277,6 @@
             const hull = new THREE.Mesh(new THREE.BoxGeometry(4, 1.5, 7), mat);
             boss.add(hull);
 
-            // Фигура Смэшера на крыше
             const smasher = new THREE.Group();
             const torso = new THREE.Mesh(new THREE.BoxGeometry(1.2, 2, 0.8), mat);
             torso.position.y = 1.7;
